@@ -1,0 +1,51 @@
+.landing-container{
+    display: flex;
+    background: linear-gradient(to right, #f2709c, #ff9472);
+    min-height: 90vh;
+    justify-content: space-evenly;
+    align-items: center;
+    color: #2D0C1A;
+    padding: 0 32px;
+    font-family: 'Bangers', cursive;
+    margin: 0;
+    flex-wrap: wrap;
+}
+
+.landing-left{
+    margin: 32px;
+}
+
+.landing-header{
+    font-size: 92px;
+    letter-spacing: 5px;
+    margin: 0;
+}
+
+.typewriter-container{
+    font-size: 64px;
+    letter-spacing: 4px;
+}
+
+.main-logo-image{
+    width: 50vw;
+}
+
+@media(max-width : 800px){
+    .landing-container{
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .main-logo-image{
+        width: 80vw;
+    }
+
+    .landing-header{
+        text-align: center;
+        margin-top: 32px;
+    }
+
+    .typewriter-container{
+        text-align: center;
+    }
+}
