@@ -6,7 +6,7 @@ import Nav from '../Nav/Nav';
 import { SAMPLE_PARAGRAPHS } from './../../data/sampleParagraphs';
 import './App.css';
 
-const TotalTime = 2;
+const TotalTime = 60;
 const ServiceURL = 'http://metaphorpsum.com/paragraphs/1/9';
 
 const defaultState = {
