@@ -1,183 +1,205 @@
-import React from 'react';
-import ChallengeSection from '../ChallengeSection/ChallengeSection';
-import Footer from '../Footer/Footer';
-import Landing from '../Landing/Landing';
-import Nav from '../Nav/Nav';
-import { SAMPLE_PARAGRAPHS } from './../../data/sampleParagraphs';
-import './App.css';
+import React from "react";
+import { SAMPLE_PARAGRAPHS } from "../../data/sampleParagraphs";
+import ChallengeSection from "../ChallengeSection/ChallengeSection";
+import Footer from "../Footer/Footer";
+import Landing from "../Landing/Landing";
+import Nav from "../Nav/Nav";
+import "./App.css";
+
+/**
+ * Schema of Test Info:
+ * [
+ *    {
+ *      testLetter: 'H',
+ *      status: correct/incorrect/notAttempted
+ *    }, {
+ *      testLetter: 'e',
+ *      status: correct/incorrect/notAttempted
+ *    }
+ * ]
+ */
 
 const TotalTime = 60;
-const ServiceURL = 'http://metaphorpsum.com/paragraphs/1/9';
-
-const defaultState = {
-    selectedParagraph: "",
+const DefaultState = {
+    selectedParagraph: "Hello World!",
+    testInfo: [],
     timerStarted: false,
     timeRemaining: TotalTime,
     words: 0,
     characters: 0,
     wpm: 0,
-    testInfo: []
 };
 
 class App extends React.Component {
+    // state = {
+    //     selectedParagraph: "Hello World!",
+    //     testInfo: [],
+    //     timerStarted: false,
+    //     timeRemaining: TotalTime,
+    //     words: 0,
+    //     characters: 0,
+    //     wpm: 0,
+    // };
+    state = DefaultState;
 
-    state = defaultState;
+    fetchNewParagraphFallback = () => {
+        const data =
+            SAMPLE_PARAGRAPHS[
+                Math.floor(Math.random() * SAMPLE_PARAGRAPHS.length)
+            ];
 
-    fetchNewParagraphFallback = () => {         //Fetching data from Sample Paragraph if data fails to come from API due to http call (not https).
-        const data = SAMPLE_PARAGRAPHS[
-            Math.floor(Math.random() * SAMPLE_PARAGRAPHS.length)
-        ];
         const selectedParagraphArray = data.split("");
-        // console.log(selectedParagraphArray);
-        const testInfo = selectedParagraphArray.map(selectedLetter => {
-            return{
+        const testInfo = selectedParagraphArray.map((selectedLetter) => {
+            return {
                 testLetter: selectedLetter,
                 status: "notAttempted",
             };
         });
 
-        this.setState({ ...defaultState, testInfo, selectedParagraph: data });      //...defaultstate to reset everything when user clicks retry button and fetches another paragraph
-    }
+        // Update the testInfo in state
+        this.setState({
+            ...DefaultState,
+            selectedParagraph: data,
+            testInfo,
+        });
+    };
 
     fetchNewParagraph = () => {
-        fetch(ServiceURL)
-            .then(response => response.text())
-            .then((data)=> {
-                // console.log(data);
-                // this.setState({ selectedParagraph: data });      state updated below
+        fetch("http://metaphorpsum.com/paragraphs/1/9")
+            .then((response) => response.text())
+            .then((data) => {
+                // Once the api results are here, break the selectedParagraph into test info
                 const selectedParagraphArray = data.split("");
-                // console.log(selectedParagraphArray);
-                const testInfo = selectedParagraphArray.map(selectedLetter => {
-                return{
-                    testLetter: selectedLetter,
-                    status: "notAttempted",
-                };
+                const testInfo = selectedParagraphArray.map(
+                    (selectedLetter) => {
+                        return {
+                            testLetter: selectedLetter,
+                            status: "notAttempted",
+                        };
+                    }
+                );
+
+                // Update the testInfo in state
+                this.setState({
+                    ...DefaultState,
+                    selectedParagraph: data,
+                    testInfo,
+                });
             });
-
-            this.setState({ ...defaultState, testInfo, selectedParagraph: data });      //...defaultstate to reset everything when user clicks retry button and fetches another paragraph
-
-        });
-    }
+    };
 
     componentDidMount() {
-        this.fetchNewParagraph();
+        // As soon as the component mounts, load the selected paragraph from the API
+        this.fetchNewParagraphFallback();
     }
+
+    startAgain = () => this.fetchNewParagraphFallback();
 
     startTimer = () => {
         this.setState({ timerStarted: true });
-        const timer = setInterval( () => {
+        const timer = setInterval(() => {
             if (this.state.timeRemaining > 0) {
-                //Change WPM as well
+                // Change the WPM and Time Remaining
                 const timeSpent = TotalTime - this.state.timeRemaining;
-                const wpm = timeSpent > 0 
-                    ? (this.state.words / timeSpent) * TotalTime 
-                    : 0 ;
-
-                this.setState({ 
-                    timeRemaining : this.state.timeRemaining - 1,
+                const wpm =
+                    timeSpent > 0
+                        ? (this.state.words / timeSpent) * TotalTime
+                        : 0;
+                this.setState({
+                    timeRemaining: this.state.timeRemaining - 1,
                     wpm: parseInt(wpm),
                 });
             } else {
                 clearInterval(timer);
             }
         }, 1000);
-    }
+    };
 
-    startAgain = () => this.fetchNewParagraph() ;     //when user clicks retry button
-    
     handleUserInput = (inputValue) => {
-        if( !this.state.timerStarted ){     //Start timer as soon as user starts typing
-            this.startTimer();
-        }
-        
-        // ALGORITHM:
-        // 1. Handle 'Underflow' case - all characters should be shown as not-attempted
-        // 2. Handle 'Overflow' case - early exit
-        // 3. Handle the backspace :
-        //          - Mark the [index+1] element as not-attempted (irrespective of whether the index is zero)
-        //          - But, dont forget to check 'Overflow' case here
-        //              (index + 1 -> out of bound, when index === length - 1)
-        // 4. Update the status in the 'testInfo'
-        //      - Find out last character in the inputValue and its index. ( O(1) efficient )
-        //      - Check if the character at same index in testInfo (state) matches ;
-        //      - Yes -> "correct"
-        //      - No -> "incorrect"
-        // 5. Irrespected of the case, characters, words and speed (wpm) can be updated.
-        
+        if (!this.state.timerStarted) this.startTimer();
+
+        /**
+         * 1. Handle the underflow case - all characters should be shown as not-attempted
+         * 2. Handle the overflow case - early exit
+         * 3. Handle the backspace case
+         *      - Mark the [index+1] element as notAttempted
+         *        (irrespective of whether the index is less than zero)
+         *      - But, don't forget to check for the overflow here
+         *        (index + 1 -> out of bound, when index === length-1)
+         * 4. Update the status in test info
+         *      1. Find out the last character in the inputValue and it's index
+         *      2. Check if the character at same index in testInfo (state) matches
+         *      3. Yes -> Correct
+         *         No  -> Incorrect (Mistake++)
+         * 5. Irrespective of the case, characters, words and wpm can be updated
+         */
+
         const characters = inputValue.length;
         const words = inputValue.split(" ").length;
         const index = characters - 1;
-        
-        // UnderFlow Case
-        if ( index < 0 ) {
+
+        if (index < 0) {
             this.setState({
-                testInfo : [
+                testInfo: [
                     {
                         testLetter: this.state.testInfo[0].testLetter,
-                        status: "notAttempted"
+                        status: "notAttempted",
                     },
                     ...this.state.testInfo.slice(1),
                 ],
                 characters,
                 words,
             });
+
             return;
         }
 
-        //OverFlow Case
-        if ( index >= this.state.selectedParagraph.length ) {
-            this.setState({ characters, words });
+        if (index >= this.state.selectedParagraph.length) {
+            this.setState({
+                characters,
+                words,
+            });
             return;
         }
 
-        //Handle BackSpace
-        const testInfo = this.state.testInfo; //make a copy of testInfo
-        if ( ! ( index === this.state.selectedParagraph.length - 1 ) ) {
-            testInfo[ index + 1 ].status = 'notAttempted';
-        }
+        // Make a copy
+        const testInfo = this.state.testInfo;
+        if (!(index === this.state.selectedParagraph.length - 1))
+            testInfo[index + 1].status = "notAttempted";
 
-        //Check for Correct typed letter
-        const isCorrect = inputValue[index] === testInfo[index].testLetter ;
+        // Check for mistake
+        const isMistake = inputValue[index] === testInfo[index].testLetter;
 
-        //Update the TestInfo
-        testInfo[index].status = isCorrect ? "correct" : "incorrect" ;
+        // Update the testInfo
+        testInfo[index].status = isMistake ? "correct" : "incorrect";
 
-        //Update the State
+        // Update the state
         this.setState({
             testInfo,
             words,
-            characters
+            characters,
         });
-    
     };
-    
+
     render() {
         return (
-            <div className='app'>
-                {/* Nav Bar */}
+            <div className="app">
                 <Nav />
-
-                {/* Landing Page */}
                 <Landing />
-
-                {/* Challenge Section */}
-                <ChallengeSection 
+                <ChallengeSection
                     selectedParagraph={this.state.selectedParagraph}
+                    testInfo={this.state.testInfo}
+                    onInputChange={this.handleUserInput}
                     words={this.state.words}
                     characters={this.state.characters}
                     wpm={this.state.wpm}
                     timeRemaining={this.state.timeRemaining}
                     timerStarted={this.state.timerStarted}
-                    testInfo={this.state.testInfo}
-                    onInputChange={this.handleUserInput}
                     startAgain={this.startAgain}
                 />
-
-                {/*Footer Section */}
                 <Footer />
-
             </div>
-        )
+        );
     }
 }
 

@@ -9,6 +9,18 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.26);
 }
 
+.typing-challenge-cont {
+    display: flex;
+    flex-grow: 1;
+}
+
+.try-again-cont {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .try-again-container{
     display: flex;
     flex-direction: column;

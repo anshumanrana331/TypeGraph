@@ -1,11 +1,11 @@
-body{
+body {
     margin: 0;
     box-sizing: border-box;
     font-family: "Poppins", sans-serif;
 }
 
-.app{
+.app {
     display: flex;
     flex-direction: column;
-    background-color: #262928;
+    background: #262a2b;
 }

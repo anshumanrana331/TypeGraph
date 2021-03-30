@@ -1,5 +1,5 @@
-import React from 'react';
-import './ChallengeDetailsCard.css';
+import React from "react";
+import "./ChallengeDetailsCard.css";
 
 const ChallengeDetailsCard = ({ cardName, cardValue }) => {
     return (
@@ -8,6 +8,6 @@ const ChallengeDetailsCard = ({ cardName, cardValue }) => {
             <div className="card-value">{cardValue}</div>
         </div>
     );
-}
- 
+};
+
 export default ChallengeDetailsCard;

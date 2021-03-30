@@ -1,17 +1,17 @@
-import React from 'react';
-import './Landing.css';
+import React from "react";
+import Typewriter from "typewriter-effect";
 import mainLogo from './../../assets/main logo.png';
-import Typewriter from 'typewriter-effect';
+import "./Landing.css";
 
 const Landing = () => {
     return (
         <div className="landing-container">
             <div data-aos="fade-right" className="landing-left">
-                <h1 className='landing-header'>Can you type...</h1>
+                <h1 className="landing-header">Can you type</h1>
                 <div className="typewriter-container">
                     <Typewriter
                         options={{
-                            strings: ['Fast?', 'Correct?', 'Quick?'],
+                            strings: ["Fast?", "Correct?", "Quick?"],
                             autoStart: true,
                             loop: true,
                         }}
@@ -19,7 +19,7 @@ const Landing = () => {
                 </div>
             </div>
             <div className="landing-right">
-                <img 
+            <img 
                     data-aos="fade-down-left" 
                     className='main-logo-image' 
                     src={mainLogo} 
